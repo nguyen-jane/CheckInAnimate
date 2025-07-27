@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Checkin(modifier: Modifier = Modifier) {
-    var reactState by remember { mutableStateOf(ReactPosition.Start) }
+    val reactState by remember { mutableStateOf(ReactPosition.Start) }
     var textPosition by remember { mutableStateOf(IntOffset.Zero) }
     var reactPosition by remember { mutableStateOf(IntOffset.Zero) }
     val offsetAnimation: Dp by animateDpAsState(
@@ -81,13 +81,14 @@ fun Checkin(modifier: Modifier = Modifier) {
             with(LocalDensity.current) { (textPosition.y - reactPosition.y).toDp() }
         }
     )
+    val animatedDistance = remember { Animatable(0f) }
     val offset = remember { Animatable(0f) }
     val rotation = remember { Animatable(0f) }
     val alpha = remember { Animatable(1f) }
     val scope = rememberCoroutineScope()
     val localDensity = LocalDensity.current
 
-    val path = android.graphics.Path().apply {
+    val path = Path().apply {
         moveTo(0f, 0f)
         cubicTo(100f, 200f, 300f, 0f, 400f, 200f)
     }
@@ -95,15 +96,14 @@ fun Checkin(modifier: Modifier = Modifier) {
         targetValue = 1f,
         animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
     )
-    val pathMeasure = remember { android.graphics.PathMeasure() }
-    val currentPosition = remember { mutableStateOf(Offset.Zero) }
+    val pathMeasure = PathMeasure()
+//    val currentPosition = remember { mutableStateOf(Offset.Zero) }
+    pathMeasure.setPath(path, false) // Set the path once
+    val pathLength = pathMeasure.length
+//    val pos = FloatArray(2)
+//    pathMeasure.getPosTan(pathMeasure.length * pathProgress, pos, null)
+//    currentPosition.value = Offset(pos[0], pos[1])
 
-    LaunchedEffect(pathProgress) {
-        pathMeasure.setPath(path, false) // Set the path once
-        val pos = FloatArray(2)
-        pathMeasure.getPosTan(pathMeasure.length * pathProgress, pos, null)
-        currentPosition.value = Offset(pos[0], pos[1])
-    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -142,10 +142,14 @@ fun Checkin(modifier: Modifier = Modifier) {
 //                    }
                     scope.launch {
                         // First animation
-                        offset.animateTo(
-                            targetValue = with(localDensity) { (textPosition.y - reactPosition.y).toDp() }.value,
-                            animationSpec = tween(1000)
+                        animatedDistance.animateTo(
+                            targetValue = pathLength,
+                            animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
                         )
+//                        offset.animateTo(
+//                            targetValue = with(localDensity) { (textPosition.y - reactPosition.y).toDp() }.value,
+//                            animationSpec = tween(1000)
+//                        )
                         // Second animation after the first
                         alpha.animateTo(
                             0f,
@@ -163,6 +167,10 @@ fun Checkin(modifier: Modifier = Modifier) {
                 )
             }
 
+            val positionOffset = pathMeasure.getPosition(animatedDistance.value)
+            val imageX = positionOffset.x
+            val imageY = positionOffset.y
+
             Image(
                 painter = painterResource(id = R.drawable.sushi),
                 contentDescription = null,
@@ -172,7 +180,8 @@ fun Checkin(modifier: Modifier = Modifier) {
                         reactPosition = coordinate.positionInRoot().round()
                     }
                     .alpha(alpha = alpha.value)
-                    .absoluteOffset(x = currentPosition.value.x.dp, y = currentPosition.value.y.dp)
+//                    .absoluteOffset(x = currentPosition.value.x.dp, y = currentPosition.value.y.dp)
+                    .absoluteOffset(x = imageX.dp, y = imageY.dp)
             )
         }
         Text(
