@@ -128,8 +128,8 @@ fun Checkin(modifier: Modifier = Modifier) {
 //                    .absoluteOffset { IntOffset(position.x.roundToInt(), -position.y.roundToInt()) }
                     //.absoluteOffset(y = offset.value.dp)
                     .absoluteOffset(
-                        x = (position.x - (reactPosition.x + 150)).dp,
-                        y = (position.y - (reactPosition.y + 150)).dp
+                        x = with(localDensity) { (position.x - (reactPosition.x + 150)).toDp() },
+                        y = with(localDensity) { (position.y - (reactPosition.y + 150)).toDp() }
                     )
                     .graphicsLayer(alpha = alpha.value)
             )
