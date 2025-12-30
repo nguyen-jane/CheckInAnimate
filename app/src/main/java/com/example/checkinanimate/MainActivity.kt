@@ -125,7 +125,7 @@ fun Checkin(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .size(50.dp, 50.dp)
-//                    .absoluteOffset { IntOffset(position.x.roundToInt(), -position.y.roundToInt()) }
+                    .absoluteOffset { IntOffset(position.x.roundToInt(), -position.y.roundToInt()) }
                     //.absoluteOffset(y = offset.value.dp)
                     .absoluteOffset(
                         x = with(localDensity) { (position.x - (reactPosition.x + 150)).toDp() },
